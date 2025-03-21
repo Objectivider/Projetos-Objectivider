@@ -2,15 +2,11 @@
 <a href="https://www.linkedin.com/in/rafael-rodrigues-304874208/"><img src="https://img.shields.io/badge/-LinkedIn-0072b1?&style=for-the-badge&logo=linkedin&logoColor=white" /></a>
 <a href="https://www.instagram.com/eufaelrodrigues_/"><img src="https://img.shields.io/badge/-Instagram-ec008c?&style=for-the-badge&logo=instagram&logoColor=white" />
 
-Sou Rafael Rodrigues da Silva, estudante de Segurança da Informação na Faculdade de Tecnologia e Inovação SENAC-DF. Tenho uma grande paixão por monitoramento e proteção de dados, e minha curiosidade me leva a explorar constantemente novas formas de garantir a segurança no mundo digital.
+Sou Rafael Rodrigues da Silva, formado em Segurança da Informação pela Faculdade de Tecnologia e Inovação SENAC-DF. Atualmente, sou estagiário na Dataprev, atuando com foco em segurança na nuvem. Nesse contexto, aprimoro minhas habilidades em monitoramento, proteção de dados e identificação de vulnerabilidades em ambientes cloud.
 
-Estou sempre em busca de maneiras de identificar vulnerabilidades e implementar soluções eficazes para proteger a integridade das informações. Para mim, a cibersegurança é mais do que um campo de estudo; é uma oportunidade de contribuir para um ambiente digital mais seguro e confiável.
+Minha paixão pela cibersegurança me motiva a explorar constantemente novas estratégias para fortalecer a integridade das informações e reduzir riscos no ambiente digital. Encaro desafios como oportunidades de aprendizado e evolução, sempre buscando soluções eficazes e inovadoras.
 
-Além disso, adoro desafios e acredito que, com determinação e criatividade, é possível superar qualquer obstáculo. Estou construindo minha trajetória com dedicação e entusiasmo, sempre buscando crescer profissionalmente e pessoalmente.
-
-## Objetivo
-
-Meu objetivo é ingressar em um estágio onde eu possa aprender na prática e desenvolver habilidades essenciais para me tornar um profissional completo em defesa, ataque e integridade de informações. Quero contribuir para a proteção de sistemas e dados enquanto expando meus conhecimentos no campo da cibersegurança, sempre buscando inovação e excelência.
+Com dedicação e comprometimento, estou construindo uma trajetória sólida na área de segurança da informação, com o objetivo de contribuir para um cenário digital mais seguro e confiável.
 
 ## Skills
 
