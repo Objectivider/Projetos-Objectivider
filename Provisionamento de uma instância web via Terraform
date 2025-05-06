@@ -1,0 +1,447 @@
+resource "oci_core_virtual_network" "vcn" {
+  compartment_id = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  display_name   = "vcnterraform"
+  cidr_block     = "10.1.0.0/16"
+  dns_label      = "vcnterraform"
+} 
+
+# security list (Subnet-Pública)
+
+resource "oci_core_security_list" "security_list_subnet_publica" {
+  compartment_id = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  vcn_id         =  oci_core_virtual_network.vcn.id
+  display_name   = "Securitylist_subnet_publica"
+
+  ingress_security_rules {
+    protocol    = "6" 
+    source      = "0.0.0.0/0"  
+    tcp_options {
+      min = 80
+      max = 80
+    }
+  }
+
+  #ICMP (protocol 1)
+
+ingress_security_rules {
+    protocol = 1
+    source   = "0.0.0.0/0" 
+
+    icmp_options {
+     type = 3
+     code = 4 
+     }  
+   }
+
+   #ICMP  (protocol 1/ type 8)
+
+ingress_security_rules {
+    protocol = 1
+    source   = "10.1.0.0/24" 
+
+    icmp_options {
+     type = 3
+     }  
+   }
+
+
+  ingress_security_rules {
+    protocol    = "6" 
+    source      = "0.0.0.0/0"  
+    tcp_options {
+      min = 22
+      max = 22
+    }
+  }
+
+  egress_security_rules {
+    protocol    = "all"
+    destination = "0.0.0.0/0"
+  }
+}
+
+
+
+
+# security list - (Para o mysql)
+
+resource "oci_core_security_list" "security-list_for_mysql" {
+  compartment_id = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  vcn_id         = oci_core_virtual_network.vcn.id
+  display_name   = "security-list-for-mysql"    
+
+# INGRESS RULES
+
+# TCP (porta 80)
+
+ingress_security_rules {
+   protocol   = "6"
+   source     = "10.1.0.0/16" 
+   tcp_options {
+    min = 80
+    max = 80 
+   } 
+}
+
+# TCP (ALL)
+
+ingress_security_rules {
+  protocol    = "6"
+  source      = "10.1.0.0/24"
+}
+
+# TCP (porta 3306)
+
+ingress_security_rules {
+  protocol    = "6"
+  source      = "10.1.0.0/24"
+  tcp_options {
+    min = 3306
+    max = 3306
+  }
+}
+
+# EGRESS RULES
+
+   egress_security_rules {
+    protocol      = "all"
+    destination   = "0.0.0.0/0"
+    }
+}    
+
+# Security_list para Wordpress
+
+resource "oci_core_security_list" "security-list_for_wordpress" {
+  compartment_id = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  vcn_id         = oci_core_virtual_network.vcn.id
+  display_name   = "security-list-for-wordpress"    
+
+# INGRESS RULES
+
+# TCP (porta 80)
+
+ingress_security_rules {
+   protocol   = "6"
+   source     = "10.1.0.0/24"
+   tcp_options {
+    min = 80
+    max = 80 
+   } 
+}
+
+ingress_security_rules {
+  protocol = "6"
+  source   = "10.1.3.0/24"  # Subnet pública onde está o LB
+  tcp_options {
+    min = 80
+    max = 80
+  }
+}
+
+
+# TCP (porta 80/16)
+
+ingress_security_rules {
+   protocol   = "6"
+   source     = "10.1.0.0/16"
+   tcp_options {
+    min = 80
+    max = 80 
+   } 
+}
+
+#ICMP (protocol 1)
+
+ingress_security_rules {
+    protocol = 1
+    source   = "0.0.0.0/0" 
+
+    icmp_options {
+     type = 3
+     code = 4 
+     }  
+   }
+
+#ICMP  (protocol 1/ type 8)
+
+ingress_security_rules {
+    protocol = 1
+    source   = "10.1.0.0/24" 
+
+    icmp_options {
+     type = 8
+     }  
+   }
+
+# TCP (ALL)
+
+ingress_security_rules {
+  protocol    = "6"
+  source      = "10.1.0.0/24"
+}
+
+# EGRESS RULES
+
+   egress_security_rules {
+    protocol      = "all"
+    destination   = "0.0.0.0/0"
+    }
+}    
+
+
+#GATEWAYS-GATEWAYS-GATEWAYS-GATEWAYS
+
+#INTERNET GATEWAY
+
+resource "oci_core_internet_gateway" "internet_gateway" {
+  compartment_id = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  vcn_id         = oci_core_virtual_network.vcn.id
+  display_name   = "internet_gateway"
+
+}
+
+
+# NAT GATEWAY
+resource "oci_core_nat_gateway" "nat_gateway" {
+  compartment_id = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  vcn_id         = oci_core_virtual_network.vcn.id
+  display_name   = "nat_gateway"
+}
+
+
+data "oci_core_services" "all_oci_services" {
+  filter {
+    name  = "name"
+    values = ["All Sa-Saopaulo-1 Services In Oracle Services Network"]
+  }
+}
+
+#ROUTER-TABLES-ROUTER-TABLES-ROUTER-TABLES-ROUTER-TABLES
+
+# ROUTE_TABLE_NAT-GATEWAY
+resource "oci_core_route_table" "route_table_private" {
+  compartment_id = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  vcn_id         = oci_core_virtual_network.vcn.id
+  display_name   = "nat_gateway_imersao_terraform"
+
+  route_rules {
+    destination       = "0.0.0.0/0"
+    destination_type  = "CIDR_BLOCK"
+    network_entity_id = oci_core_nat_gateway.nat_gateway.id
+  }
+}
+
+# Route Table Pública
+resource "oci_core_route_table" "public_route_table" {
+  compartment_id = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  vcn_id         = oci_core_virtual_network.vcn.id
+  display_name   = "public-route-table"
+
+  route_rules {
+    destination       = "0.0.0.0/0"
+    destination_type  = "CIDR_BLOCK"
+    network_entity_id = oci_core_internet_gateway.internet_gateway.id
+  }
+}
+
+#SUBNETS-SUBNETS-SUBNETS-SUBNETS
+
+# SUB-NETS
+
+resource "oci_core_subnet" "Subnet_publica_bastion" {
+  compartment_id       = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  vcn_id               = oci_core_virtual_network.vcn.id
+  display_name         = "Subnet_publica_bastion"
+  cidr_block           = "10.1.3.0/24"
+  prohibit_public_ip_on_vnic = false
+  security_list_ids    = [oci_core_security_list.security_list_subnet_publica.id] 
+  route_table_id       = oci_core_route_table.public_route_table.id
+ }
+resource "oci_core_subnet" "Subnet_privada_webservers" {
+  compartment_id       = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  vcn_id               = oci_core_virtual_network.vcn.id
+  display_name         = "Subnet_privada_webservers"
+  cidr_block           = "10.1.2.0/24"
+  dns_label            = "subnetws"
+  prohibit_public_ip_on_vnic = true
+  security_list_ids     = [oci_core_security_list.security-list_for_wordpress.id]  
+  route_table_id       = oci_core_route_table.route_table_private.id
+}
+resource "oci_core_subnet" "Subnet_privada_MySQL" {
+  compartment_id       = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  vcn_id               = oci_core_virtual_network.vcn.id
+  display_name         = "Subnet_privada_MySQL"
+  cidr_block           = "10.1.1.0/24"
+  prohibit_public_ip_on_vnic = true
+  security_list_ids     = [oci_core_security_list.security-list_for_mysql.id]  
+  route_table_id       = oci_core_route_table.route_table_private.id  
+}
+
+# SHAPE DAS INSTANCIAS
+
+data "oci_core_images" "ubuntu" {
+  compartment_id           = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  operating_system         = "Canonical Ubuntu"
+  operating_system_version = "20.04"
+  shape                    = "VM.Standard.E2.1"
+}
+
+
+#INSTANCIAS-INSTANCIAS-INSTANCIAS
+
+resource "oci_core_instance" "web_server_1" {
+    availability_domain = "TbTO:SA-SAOPAULO-1-AD-1"
+    compartment_id      = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+    shape               = "VM.Standard.E2.1" 
+    source_details {
+        source_id = data.oci_core_images.ubuntu.images[0].id
+        source_type = "image"
+    }
+    display_name = "Instancia_WordPress_1"
+    create_vnic_details {
+        assign_public_ip = false
+        subnet_id = oci_core_subnet.Subnet_privada_webservers.id
+    }
+    metadata = {
+        ssh_authorized_keys = file("~/.ssh/id_rsa.pub")
+        user_data            = base64encode(file("scripts/instalar_wordpress.sh"))
+    } 
+    preserve_boot_volume = false
+}
+
+resource "oci_core_instance" "web_server_2" {
+    availability_domain = "TbTO:SA-SAOPAULO-1-AD-1"
+    compartment_id      = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+    shape               = "VM.Standard.E2.1" 
+    source_details {
+        source_id = data.oci_core_images.ubuntu.images[0].id
+        source_type = "image"
+    }
+    display_name = "Instancia_WordPress_2"
+    create_vnic_details {
+        assign_public_ip = false
+        subnet_id = oci_core_subnet.Subnet_privada_webservers.id
+    }
+    metadata = {
+        ssh_authorized_keys = file("~/.ssh/id_rsa.pub")
+    } 
+    preserve_boot_volume = false
+}
+
+resource "oci_core_instance" "MySQL_server_1" {
+    availability_domain = "TbTO:SA-SAOPAULO-1-AD-1"
+    compartment_id      = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+    shape               = "VM.Standard.E2.1" 
+    source_details {
+        source_id = data.oci_core_images.ubuntu.images[0].id
+        source_type = "image"
+    }
+    display_name = "Instancia_MySQL"
+    create_vnic_details {
+        assign_public_ip = false
+        subnet_id = oci_core_subnet.Subnet_privada_MySQL.id
+    }
+    metadata = {
+        ssh_authorized_keys = file("~/.ssh/id_rsa.pub")
+        user_data            = base64encode(file("scripts/instalar_mysql.sh"))
+    } 
+    preserve_boot_volume = false
+}
+
+resource "oci_core_instance" "Bastion" {
+    availability_domain = "TbTO:SA-SAOPAULO-1-AD-1"
+    compartment_id      = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+    shape               = "VM.Standard.E2.1" 
+    source_details {
+        source_id = data.oci_core_images.ubuntu.images[0].id
+        source_type = "image"
+    }
+    display_name = "Instancia_Bastion"
+    create_vnic_details {
+        assign_public_ip = true
+        subnet_id = oci_core_subnet.Subnet_publica_bastion.id
+    }
+    metadata = {
+        ssh_authorized_keys = file("~/.ssh/id_rsa.pub")
+    } 
+    preserve_boot_volume = false
+}
+
+#LOAD BALANCER LOAD BALANCER LOAD BALANCER
+
+resource "oci_load_balancer_load_balancer" "Lb_Wordpress" {
+  compartment_id = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  display_name   = "LoadBalancer_Wordpress"
+  shape          = "flexible"
+  subnet_ids     = [oci_core_subnet.Subnet_publica_bastion.id]  # Sub-rede pública existente
+  is_private     = false
+
+  shape_details {
+    minimum_bandwidth_in_mbps = 10
+    maximum_bandwidth_in_mbps = 100
+  }
+}
+
+# BACKEND SET
+resource "oci_load_balancer_backend_set" "web_backend_set" {
+  name             = "web-backend-set"
+  load_balancer_id = oci_load_balancer_load_balancer.Lb_Wordpress.id
+  policy           = "ROUND_ROBIN"
+
+  health_checker {
+    protocol = "HTTP"
+    url_path = "/"
+    port     = 80
+  }
+}
+
+# BACKEND 1
+resource "oci_load_balancer_backend" "web_backend_1" {
+  load_balancer_id = oci_load_balancer_load_balancer.Lb_Wordpress.id
+  backendset_name = oci_load_balancer_backend_set.web_backend_set.name
+  ip_address       = oci_core_instance.web_server_1.private_ip
+  port             = 80
+}
+
+# BACKEND 2 
+resource "oci_load_balancer_backend" "web_backend_2" {
+  load_balancer_id = oci_load_balancer_load_balancer.Lb_Wordpress.id
+  backendset_name = oci_load_balancer_backend_set.web_backend_set.name
+  ip_address       = oci_core_instance.web_server_2.private_ip
+  port             = 80
+}
+
+# LISTENER -  HTTP/80
+resource "oci_load_balancer_listener" "web_listener" {
+  name                    = "web-listener"
+  default_backend_set_name = oci_load_balancer_backend_set.web_backend_set.name
+  load_balancer_id        = oci_load_balancer_load_balancer.Lb_Wordpress.id
+  port                    = 80
+  protocol                = "HTTP"
+}
+data "oci_core_vnic_attachments" "vnic_web_server_1" {
+  compartment_id      = oci_core_instance.web_server_1.compartment_id
+  instance_id         = oci_core_instance.web_server_1.id
+}
+
+
+
+data "oci_core_vnic_attachments" "web_server_1_vnic_attachments" {
+  compartment_id      = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  instance_id         = oci_core_instance.web_server_1.id
+}
+
+
+data "oci_core_vnic" "web_server_1_vnic" {
+  vnic_id = data.oci_core_vnic_attachments.vnic_web_server_1.vnic_attachments[0].vnic_id
+}
+
+data "oci_core_vnic_attachments" "web_server_2_vnic_attachments" {
+  compartment_id      = "ocid1.compartment.oc1..aaaaaaaasp3kbrbeu4o7ozkcamzofmtrioqd5dqdwrtgnh3am6kzaluyi3na"
+  instance_id         = oci_core_instance.web_server_1.id
+}
+
+
+data "oci_core_vnic" "web_server_2_vnic" {
+  vnic_id = data.oci_core_vnic_attachments.vnic_web_server_1.vnic_attachments[0].vnic_id
+}
